@@ -1,0 +1,36 @@
+{
+  "default_agent_copies": 1,
+  "jobs": [
+    {
+      "default_agent_copies": 1,
+      "exchange": "BITFINEX",
+      "data": "ORDERBOOKS",
+      "module": "BitfinexOrdersREST",
+      "market": "XVGETH",
+      "schedule": "cron",
+      "cron": "5_*_*_*_*_*",
+      "threads": 50,
+      "url": "https://api.bitfinex.com/v1/book/[MARKET]?limit_bids=2000&limit_asks=2000"
+    },
+    {
+      "exchange": "BITMEX",
+      "data": "TRADES",
+      "module": "BitmexWS",
+      "market": "ALL",
+      "schedule": "continuous",
+      "restart": "always",
+      "restart_after": 10,
+      "url": "wss://www.bitmex.com/realtime"
+    },
+    {
+      "exchange": "BINANCE",
+      "data": "ORDERS",
+      "module": "BinanceCombinedOrdersWS",
+      "market": "ETHBTC",
+      "schedule": "continuous",
+      "restart": "always",
+      "restart_after": 10,
+      "url": "wss://stream.binance.com:9443/stream?streams=[STREAMS]"
+    }
+  ]
+}

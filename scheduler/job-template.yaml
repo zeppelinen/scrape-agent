@@ -1,0 +1,47 @@
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: NAME
+spec:
+  ttlSecondsAfterFinished: 600
+  completions: 1
+  parallelism: 1
+  # activeDeadlineSeconds: 600
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: cloud.google.com/gke-preemptible
+                operator: In
+                values:
+                - "true"
+      volumes:
+        - name: google-cloud-key
+          secret:
+            defaultMode: 420
+            secretName: google-cloud-key
+      restartPolicy: Never
+      containers:
+      - name: scrape-agents
+        image: eu.gcr.io/qfx-data/scrape-agents-dev
+        imagePullPolicy: Always
+        resources:
+          limits:
+            cpu: "1"
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
+        volumeMounts:
+        - name: google-cloud-key
+          mountPath: /keys/
+        envFrom:
+        - configMapRef:
+            name: scrape-agents-config
+        command: ["/bin/sh"]
+

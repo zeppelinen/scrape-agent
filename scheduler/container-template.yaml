@@ -1,0 +1,58 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: NAME
+  labels:
+    app: scrape-agent-scheduled
+    affinity: LABEL
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        preference:
+          matchExpressions:
+          - key: cloud.google.com/gke-preemptible
+            operator: In
+            values:
+            - "true"
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: affinity
+            operator: In
+            values:
+            - LABEL
+        topologyKey: "kubernetes.io/hostname"
+
+  restartPolicy: Never
+  serviceAccount: scrape-scheduler
+  serviceAccountName: scrape-scheduler
+  automountServiceAccountToken: true
+  volumes:
+  - name: google-cloud-key
+    secret:
+      defaultMode: 420
+      secretName: google-cloud-key
+  containers:
+  - name: scrape-agents
+    image: eu.gcr.io/qfx-data/scrape-agents-dev:latest
+    imagePullPolicy: Always
+    resources:
+      requests: 
+        cpu: 200m
+        memory: 200Mi
+      limits:
+        cpu: "1"
+        memory: "512Mi"
+    volumeMounts:
+    - name: google-cloud-key
+      mountPath: /keys/
+    envFrom:
+    - configMapRef:
+        name: scrape-agents-config
+    command: ["/bin/sh"]
+    # args: ["-c", "COMMAND"]
+
